@@ -59,7 +59,7 @@ class TurnCompleteDialog extends StatelessWidget {
                   itemBuilder: (context, index) => ListTile(
                         title: Text(
                           '${player[index].userName}',
-                          style: ThemeText.textStyle,
+                          style: ThemeText.textStyle.copyWith(color: Colors.black),
                         ),
                         subtitle: Text('${player[index].money}'),
                       )),
