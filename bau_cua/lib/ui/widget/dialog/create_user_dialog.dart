@@ -1,4 +1,5 @@
 import 'package:bau_cua/common/app_constace.dart';
+import 'package:bau_cua/common/theme/theme_color.dart';
 import 'package:bau_cua/common/theme/theme_text.dart';
 import 'package:bau_cua/ui/widget/home_screen_constance.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +37,7 @@ class CreateUserDialog extends StatelessWidget {
                       controller: userEditingController,
                       decoration: InputDecoration(
                         labelText: 'User name',
-                        labelStyle: ThemeText.textStyle,
+                        labelStyle: ThemeText.textStyle.copyWith(color: Colors.black),
                       ),
                     ),
                     SizedBox(
@@ -48,6 +49,7 @@ class CreateUserDialog extends StatelessWidget {
                           createUser(userName);
                           Navigator.pop(context);
                         },
+                          color: ThemColor.primaryColor,
                           child: Text(HomeScreenConstance.createAccount,
                             style: ThemeText.textStyle,),
                           shape: RoundedRectangleBorder(

@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:toast/toast.dart';
+import 'package:vibration/vibration.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -43,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child:
                   BlocConsumer<GameBloc, GameState>(listener: (context, state) {
                 if (state is GameNoDataState) {
+                  pauseTimer();
                   showDialog(
                       context: context,
                       barrierDismissible: true,
@@ -51,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 .add(GameAddUserEvent(userName: userName));
                           }));
                 } else if (state is GameCompleteState) {
+                  pauseTimer();
                   showDialog(
                       context: context,
                       barrierDismissible: true,
@@ -67,9 +70,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               BlocProvider.of<GameBloc>(context)..add(GameInitEvent());
                             }
                   });
-                }else if (state is GameInitState) {
-                  startTimer();
-                } else if (state is GameLoadingState) _start = 20;
+                }else if (state is GameLoadingState) _start = 20;
+                else if (state is GameInitState)  startTimer(30);;
               }, builder: (context, state) {
                 if (state is GameInitState) {
                   return Column(
@@ -90,6 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   child: IconButton(
                                       icon: Icon(Icons.add),
                                       onPressed: () {
+                                        pauseTimer();
                                         showDialog(
                                             barrierDismissible: false,
                                             context: context,
@@ -165,13 +168,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         height: 40.h,
                         width: 200.w,
                         child: RaisedButton(
-                          color: ThemColor.secondColor,
+                          color: ThemColor.primaryColor,
                           onPressed: () {
+                            pauseTimer();
                             visible = true;
                             BlocProvider.of<GameBloc>(context)
                               ..add(GameConfirmEvent());
                           },
                           shape: RoundedRectangleBorder(
+                            side: BorderSide(color: Colors.amber,width: 5.w),
                             borderRadius: AppConstance.borderRadius,
                           ),
                           child: Text(
@@ -196,28 +201,27 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Timer _timer;
-  int _start = 20;
+  // Timer _timer;
+  // int _start = 30;
   bool visible = true;
-  void startTimer() {
-    const oneSec = const Duration(seconds: 1);
-    _timer = new Timer.periodic(
-      oneSec,
-          (Timer timer) {
-        if (_start == 0) {
-          setState(() {
-            timer.cancel();
-            visible = false;
-          });
-        } else {
-          setState(() {
-            _start--;
-          });
-
-        }
-      },
-    );
-  }
+  // void startTimer() {
+  //   const oneSec = const Duration(seconds: 1);
+  //   _timer = new Timer.periodic(
+  //     oneSec,
+  //         (Timer timer) {
+  //       if (_start == 0) {
+  //         setState(() {
+  //           timer.cancel();
+  //           visible = false;
+  //         });
+  //       } else {
+  //         setState(() {
+  //           _start--;
+  //         });
+  //       }
+  //     },
+  //   );
+  // }
   Widget _placeBet(GameInitState state) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -329,4 +333,55 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
     );
   }
+  Timer _timer;
+  int _start = 0;
+  bool _vibrationActive = false;
+
+  void startTimer(int timerDuration) {
+    if (_timer != null) {
+      _timer.cancel();
+      cancelVibrate();
+    }
+    setState(() {
+      _start = timerDuration;
+    });
+    const oneSec = const Duration(seconds: 1);
+    print('test');
+    _timer = new Timer.periodic(
+      oneSec,
+          (Timer timer) => setState(
+            () {
+          if (_start < 1) {
+            visible = false;
+            timer.cancel();
+            print('alarm');
+            vibrate();
+          } else {
+            _start = _start - 1;
+          }
+        },
+      ),
+    );
+  }
+
+  void cancelVibrate() {
+    _vibrationActive = false;
+    Vibration.cancel();
+  }
+
+  void vibrate() async {
+    _vibrationActive = true;
+    if (await Vibration.hasVibrator()) {
+      while (_vibrationActive) {
+        Vibration.vibrate(duration: 1000);
+        await Future.delayed(Duration(seconds: 2));
+      }
+    }
+  }
+
+  void pauseTimer() {
+    if (_timer != null) _timer.cancel();
+  }
+
+  void unPauseTimer() => startTimer(_start);
 }

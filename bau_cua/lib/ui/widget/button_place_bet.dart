@@ -21,7 +21,7 @@ class ButtonPlaceBet extends StatelessWidget {
                   width: 60.w,
                   child: Text(
                     "5000đ",
-                    style: ThemeText.textStyle,
+                    style: ThemeText.textStyle.copyWith(color: Colors.black),
                   ),
                   onPressed:(){
                     selectBet(5000);
@@ -31,7 +31,7 @@ class ButtonPlaceBet extends StatelessWidget {
                   width: 60.w,
                   child: Text(
                     "10000đ",
-                    style: ThemeText.textStyle,
+                    style: ThemeText.textStyle.copyWith(color: Colors.black),
                   ),
                   onPressed:(){
                     selectBet(10000);
@@ -41,7 +41,7 @@ class ButtonPlaceBet extends StatelessWidget {
                   width: 60.w,
                   child: Text(
                     "20000đ",
-                    style: ThemeText.textStyle,
+                    style: ThemeText.textStyle.copyWith(color: Colors.black),
                   ),
                   onPressed:(){
                     selectBet(20000);
@@ -51,7 +51,7 @@ class ButtonPlaceBet extends StatelessWidget {
                   width: 60.w,
                   child: Text(
                     "50000đ",
-                    style: ThemeText.textStyle,
+                    style: ThemeText.textStyle.copyWith(color: Colors.black),
                   ),
                   onPressed:(){
                     selectBet(50000);

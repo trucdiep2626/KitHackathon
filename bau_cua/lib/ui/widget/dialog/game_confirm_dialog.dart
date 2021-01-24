@@ -52,11 +52,13 @@ class GameConfirmDialog extends StatelessWidget {
                 height: 20.h,
               ),
               SizedBox(
-                height: 30.h,
+                height: 50.h,
                 width: double.infinity,
                 child: RaisedButton(
                     onPressed: submit,
+                    color: ThemColor.primaryColor,
                     shape: RoundedRectangleBorder(
+                      side: BorderSide(color: Colors.amber,width: 5.w),
                       borderRadius: AppConstance.borderRadius
                     ),
                     child: Text(

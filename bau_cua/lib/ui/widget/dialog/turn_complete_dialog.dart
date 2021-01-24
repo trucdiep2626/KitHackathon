@@ -1,5 +1,6 @@
 import 'package:bau_cua/common/app_constace.dart';
 import 'package:bau_cua/common/convert_index_to_str_assets.dart';
+import 'package:bau_cua/common/theme/theme_color.dart';
 import 'package:bau_cua/common/theme/theme_text.dart';
 import 'package:bau_cua/model/user.dart';
 import 'package:bau_cua/ui/widget/show_result_widget.dart';
@@ -65,9 +66,10 @@ class TurnCompleteDialog extends StatelessWidget {
             ),
             SizedBox(
               width: double.infinity,
-              height: 30.h,
+              height: 50.h,
               child: RaisedButton(
                 onPressed: turnDone,
+                color: ThemColor.primaryColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: AppConstance.borderRadius,
                 ),
