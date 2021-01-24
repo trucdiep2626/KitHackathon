@@ -27,7 +27,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     if (event is GameAddUserEvent) {
       yield* _mapGameAddUserEventToState(event);
     } else if (event is GameInitEvent) {
-      yield* _mapGameInitStateToState();
+      yield* _mapGameInitStateToState(event);
     } else if (event is GameSelectEvent) {
       yield* _mapGameSelectEventToState(event);
     } else if (event is GameSubmitEvent || timeSelect == 0) {
@@ -50,10 +50,8 @@ class GameBloc extends Bloc<GameEvent, GameState> {
   ///1 Người chơi cược xong
   Stream<GameState> _mapGameSubmitEventToState(GameSubmitEvent event) async* {
     yield GameLoadingState();
-    if (players[indexUser].betList.isEmpty ||
-        players[indexUser].betList.length == 0)
       yield GameInitState(time: timeSelect, user: players[indexUser]);
-    else if (indexUser == players.length - 1) {
+    if (indexUser == players.length - 1) {
       randomResult();
       print('List result : $result');
       getCountAppear();
@@ -77,14 +75,14 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
   ///Người chơi cược
   Stream<GameState> _mapGameSelectEventToState(GameSelectEvent event) async* {
-    yield GameLoadingState();
-    if (event.money <= 50000 && getMoneyBet() + event.money <= 50000) {
+    yield GameSelectLoadingState();
+    if (event.money <= 50000 && getMoneyBet() + event.money <= players[indexUser].money) {
       betTurn(event.index, event.money);
     }
     yield GameInitState(time: timeSelect, user: players[indexUser]);
   }
 
-  Stream<GameState> _mapGameInitStateToState() async* {
+  Stream<GameState> _mapGameInitStateToState(GameInitEvent event) async* {
     yield GameLoadingState();
     if (players.isEmpty || players.length == 0) {
       yield GameNoDataState();

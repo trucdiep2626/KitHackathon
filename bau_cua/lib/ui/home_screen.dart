@@ -1,22 +1,19 @@
 import 'dart:async';
-
 import 'package:bau_cua/bloc/game_bloc/game_bloc.dart';
 import 'package:bau_cua/bloc/game_bloc/game_event.dart';
 import 'package:bau_cua/bloc/game_bloc/game_state.dart';
 import 'package:bau_cua/common/app_constace.dart';
 import 'package:bau_cua/common/theme/theme_color.dart';
 import 'package:bau_cua/common/theme/theme_text.dart';
-import 'package:bau_cua/injection.dart';
 import 'package:bau_cua/ui/widget/button_place_bet.dart';
 import 'package:bau_cua/ui/widget/dialog/create_user_dialog.dart';
 import 'package:bau_cua/ui/widget/dialog/game_confirm_dialog.dart';
 import 'package:bau_cua/ui/widget/dialog/turn_complete_dialog.dart';
 import 'package:bau_cua/ui/widget/game_icon_button.dart';
-import 'package:bau_cua/ui/widget/show_result_widget.dart';
-import 'package:custom_timer/custom_timer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:toast/toast.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -31,12 +28,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    _timer.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final CustomTimerController _controller = new CustomTimerController();
+
     return Scaffold(
       backgroundColor: ThemColor.primaryColor,
       body: SafeArea(
@@ -47,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (state is GameNoDataState) {
                   showDialog(
                       context: context,
+                      barrierDismissible: true,
                       builder: (_) => CreateUserDialog(createUser: (userName) {
                             BlocProvider.of<GameBloc>(context)
                                 .add(GameAddUserEvent(userName: userName));
@@ -54,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 } else if (state is GameCompleteState) {
                   showDialog(
                       context: context,
+                      barrierDismissible: true,
                       builder: (_) => TurnCompleteDialog(
                             result: state.result,
                             player: state.players,
@@ -62,41 +62,86 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ..add(GameInitEvent());
                               Navigator.pop(context);
                             },
-                          ));
-                }
+                          )).then((value){
+                            if (value == null){
+                              BlocProvider.of<GameBloc>(context)..add(GameInitEvent());
+                            }
+                  });
+                }else if (state is GameInitState) {
+                  startTimer();
+                } else if (state is GameLoadingState) _start = 20;
               }, builder: (context, state) {
                 if (state is GameInitState) {
                   return Column(
                     children: [
-                      Column(
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: AppConstance.borderRadius,
-                                  border: Border.all(color: Colors.white,width: 5.w),
+                      Visibility(
+                        visible: visible,
+                        child: Column(
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              //mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: AppConstance.borderRadius,
+                                    border: Border.all(color: Colors.white,width: 5.w),
+                                  ),
+                                  child: IconButton(
+                                      icon: Icon(Icons.add),
+                                      onPressed: () {
+                                        showDialog(
+                                            barrierDismissible: false,
+                                            context: context,
+                                            builder: (_) => CreateUserDialog(
+                                                    createUser: (userName) {
+                                                  BlocProvider.of<GameBloc>(context)
+                                                      .add(GameAddUserEvent(
+                                                          userName: userName));
+                                                }));
+                                      }),
                                 ),
-                                child: IconButton(
-                                    icon: Icon(Icons.add),
-                                    onPressed: () {
-                                      showDialog(
-                                          barrierDismissible: false,
-                                          context: context,
-                                          builder: (_) => CreateUserDialog(
-                                                  createUser: (userName) {
-                                                BlocProvider.of<GameBloc>(context)
-                                                    .add(GameAddUserEvent(
-                                                        userName: userName));
-                                              }));
-                                    }),
-                              ),
-                              SizedBox(
-                                width: 80.w,
-                              ),
-                              Container(
+                                SizedBox(
+                                  width: 80.w,
+                                ),
+                                Container(
+                                  alignment: Alignment.center,
+                                  height: 20.h,
+                                  width: 100.w,
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    border: Border.all(
+                                        color: Colors.yellow[400], width: 3.w),
+                                  ),
+                                  child: Text('$_start',style: ThemeText.textStyle,),
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              height: 50.h,
+                            ),
+                            Container(
+                                alignment: Alignment.center,
+                                height: 30.h,
+                                width: 200.w,
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  border: Border.all(
+                                      color: Colors.yellow[400], width: 3.w),
+                                ),
+                                child: Text(
+                                  "${state.user.userName}",
+                                  style: ThemeText.textStyle
+                                      .copyWith(color: Colors.black),
+                                )),
+                            SizedBox(
+                              height: 50.h,
+                            ),
+                            _placeBet(state),
+                            SizedBox(
+                              height: 50.h,
+                            ),
+                            Container(
                                 alignment: Alignment.center,
                                 height: 20.h,
                                 width: 100.w,
@@ -105,83 +150,35 @@ class _HomeScreenState extends State<HomeScreen> {
                                   border: Border.all(
                                       color: Colors.yellow[400], width: 3.w),
                                 ),
-                                child: CustomTimer(
-                                  controller: _controller,
-                                  from: Duration(seconds: 20),
-                                  to: Duration(seconds: 0),
-                                  interval: Duration(seconds: 1),
-                                  builder:
-                                      (CustomTimerRemainingTime remaining) {
-                                    return Text(
-                                      "${remaining.seconds}",
-                                      style: TextStyle(fontSize: 14.sp),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(
-                            height: 50.h,
-                          ),
-                          Container(
-                              alignment: Alignment.center,
-                              height: 20.h,
-                              width: 100.w,
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                border: Border.all(
-                                    color: Colors.yellow[400], width: 3.w),
-                              ),
-                              child: Text(
-                                // "${state.user.userName}",
-                                "${state.user.userName}",
-                                style: ThemeText.textStyle
-                                    .copyWith(color: Colors.black),
-                              )),
-                          SizedBox(
-                            height: 50.h,
-                          ),
-                          _placeBet(state),
-                          SizedBox(
-                            height: 50.h,
-                          ),
-                          Container(
-                              alignment: Alignment.center,
-                              height: 20.h,
-                              width: 100.w,
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                border: Border.all(
-                                    color: Colors.yellow[400], width: 3.w),
-                              ),
-                              child: Text(
-                                "${state.user.money}",
-                                style: ThemeText.textStyle
-                                    .copyWith(color: Colors.black),
-                              )),
-                          SizedBox(
-                            height: 50.h,
-                          ),
-                          SizedBox(
-                            height: 40.h,
-                            width: 200.w,
-                            child: RaisedButton(
-                              color: ThemColor.secondColor,
-                              onPressed: () {
-                                BlocProvider.of<GameBloc>(context)
-                                  ..add(GameConfirmEvent());
-                              },
-                              shape: RoundedRectangleBorder(
-                                borderRadius: AppConstance.borderRadius,
-                              ),
-                              child: Text(
-                                "Submit",
-                                style: ThemeText.textStyle,
-                              ),
+                                child: Text(
+                                  "${state.user.money}",
+                                  style: ThemeText.textStyle
+                                      .copyWith(color: Colors.black),
+                                )),
+                            SizedBox(
+                              height: 50.h,
                             ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        height: 40.h,
+                        width: 200.w,
+                        child: RaisedButton(
+                          color: ThemColor.secondColor,
+                          onPressed: () {
+                            visible = true;
+                            BlocProvider.of<GameBloc>(context)
+                              ..add(GameConfirmEvent());
+                          },
+                          shape: RoundedRectangleBorder(
+                            borderRadius: AppConstance.borderRadius,
                           ),
-                        ],
+                          child: Text(
+                            "Submit",
+                            style: ThemeText.textStyle,
+                          ),
+                        ),
                       ),
                     ],
                   );
@@ -199,6 +196,28 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Timer _timer;
+  int _start = 20;
+  bool visible = true;
+  void startTimer() {
+    const oneSec = const Duration(seconds: 1);
+    _timer = new Timer.periodic(
+      oneSec,
+          (Timer timer) {
+        if (_start == 0) {
+          setState(() {
+            timer.cancel();
+            visible = false;
+          });
+        } else {
+          setState(() {
+            _start--;
+          });
+
+        }
+      },
+    );
+  }
   Widget _placeBet(GameInitState state) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

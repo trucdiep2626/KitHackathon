@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 abstract class GameEvent extends Equatable {
 }
 class GameInitEvent extends GameEvent {
-
   GameInitEvent();
   @override
   List<Object> get props => [];

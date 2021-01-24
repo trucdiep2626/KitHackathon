@@ -20,6 +20,18 @@ class TurnCompleteDialog extends StatelessWidget {
       child: Container(
         child: Column(
           children: [
+            Container(
+              alignment: Alignment.center,
+              height: 100.h,
+              width: 500.w,
+              decoration: BoxDecoration(
+                color: Colors.red,
+                border: Border.all(
+                    color: Colors.yellow[400], width: 3.w),
+              ),
+              child: Text('Result',style: ThemeText.textStyle.copyWith(fontSize: 40),),
+            ),
+            SizedBox(height: 20.h,),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

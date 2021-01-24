@@ -12,7 +12,11 @@ class GameInitState extends GameState{
   @override
   List<Object> get props => [time,user];
 }
+class GameSelectLoadingState extends GameState{
+  @override
+  List<Object> get props => [];
 
+}
 class GameLoadingState extends GameState {
   @override
   List<Object> get props => [];

@@ -32,7 +32,7 @@ dependencies:
   get_it: ^5.0.6
   equatable: ^1.2.5
   flutter_bloc: ^3.2.0
-  custom_timer: ^0.0.3
+  toast: ^0.1.5
 
 dev_dependencies:
   flutter_test:
